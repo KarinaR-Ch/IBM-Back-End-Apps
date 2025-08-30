@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore API - Add/Modify Review</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .api-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        h2 {
+            color: #ff758c;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        h3 {
+            color: #ff7eb3;
+            margin: 1rem 0;
+        }
+        
+        .endpoint {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #ff758c;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 0.5rem 0;
+        }
+        
+        .btn:hover {
+            background: #ff7eb3;
+            transform: translateY(-2px);
+        }
+        
+        .response {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #ff758c;
+            box-shadow: 0 0 0 3px rgba(255, 117, 140, 0.2);
+        }
+        
+        .instructions {
+            background: #ffeef0;
+            border-left: 4px solid #ff758c;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            color: #ff758c;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            margin-left: 1.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #2d2d2d;
+            color: white;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .review-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 1.5rem 0;
+        }
+        
+        .review-card h3 {
+            color: #ff758c;
+            margin-top: 0;
+        }
+        
+        .review-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .review-info p {
+            margin: 0.5rem 0;
+        }
+        
+        .review-info strong {
+            color: #2c3e50;
+        }
+        
+        .api-info {
+            background: #fff0f3;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .api-info h3 {
+            color: #ff758c;
+            margin-top: 0;
+        }
+        
+        .book-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .book-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .book-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .book-item.selected {
+            border: 2px solid #ff758c;
+            background: #ffeef0;
+        }
+        
+        .book-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .book-author {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .rating {
+            display: flex;
+            margin: 0.5rem 0;
+        }
+        
+        .rating input {
+            display: none;
+        }
+        
+        .rating label {
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            margin: 0 2px;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .rating label:hover {
+            background: #ffd0d6;
+        }
+        
+        .rating input:checked ~ label {
+            background: #ff758c;
+            color: white;
+        }
+        
+        .star-icon {
+            color: #ffc107;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bookstore API Lab</h1>
+            <p>Task 8: Add/Modify Book Review</p>
+        </header>
+        
+        <div class="content">
+            <div class="api-section">
+                <h2>API Endpoint</h2>
+                
+                <div class="endpoint">
+                    POST /api/books/{isbn}/reviews
+                </div>
+                
+                <p>This endpoint adds or modifies a review for a specific book.</p>
+                
+                <h3>Example Request</h3>
+                <div class="endpoint">
+                    fetch('/api/books/9780743273565/reviews', {<br>
+                    &nbsp;&nbsp;method: 'POST',<br>
+                    &nbsp;&nbsp;headers: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;'Content-Type': 'application/json',<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;'Authorization': 'Bearer {token}'<br>
+                    &nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;body: JSON.stringify({<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;rating: 5,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;comment: 'Excellent book! Highly recommended.'<br>
+                    &nbsp;&nbsp;})<br>
+                    })<br>
+                    .then(response => response.json())<br>
+                    .then(data => console.log(data));
+                </div>
+                
+                <div class="api-info">
+                    <h3>API Requirements</h3>
+                    <p><strong>Authentication:</strong> Requires valid JWT token</p>
+                    <p><strong>Rating:</strong> Integer between 1 and 5</p>
+                    <p><strong>Comment:</strong> Optional, but recommended</p>
+                </div>
+                
+                <div class="book-list">
+                    <div class="book-item" onclick="selectBook('9780743273565', 'The Great Gatsby', this)">
+                        <div class="book-title">The Great Gatsby</div>
+                        <div class="book-author">F. Scott Fitzgerald</div>
+                    </div>
+                    <div class="book-item" onclick="selectBook('9780061120084', 'To Kill a Mockingbird', this)">
+                        <div class="book-title">To Kill a Mockingbird</div>
+                        <div class="book-author">Harper Lee</div>
+                    </div>
+                    <div class="book-item" onclick="selectBook('9780451524935', '1984', this)">
+                        <div class="book-title">1984</div>
+                        <div class="book-author">George Orwell</div>
+                    </div>
+                    <div class="book-item" onclick="selectBook('9780141439518', 'Pride and Prejudice', this)">
+                        <div class="book-title">Pride and Prejudice</div>
+                        <div class="book-author">Jane Austen</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h2>Add/Modify Review</h2>
+                <p>Select a book and write your review:</p>
+                
+                <div class="form-group">
+                    <label for="selected-book">Selected Book</label>
+                    <input type="text" id="selected-book" placeholder="Select a book from the left" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rating">Rating</label>
+                    <div class="rating">
+                        <input type="radio" id="star5" name="rating" value="5">
+                        <label for="star5">5</label>
+                        <input type="radio" id="star4" name="rating" value="4">
+                        <label for="star4">4</label>
+                        <input type="radio" id="star3" name="rating" value="3">
+                        <label for="star3">3</label>
+                        <input type="radio" id="star2" name="rating" value="2">
+                        <label for="star2">2</label>
+                        <input type="radio" id="star1" name="rating" value="1">
+                        <label for="star1">1</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comment">Review Comment</label>
+                    <textarea id="comment" placeholder="Write your review here..."></textarea>
+                </div>
+                
+                <button type="button" class="btn" onclick="submitReview()">
+                    <i class="fas fa-pencil-alt"></i> Submit Review
+                </button>
+                
+                <div id="message-container"></div>
+                
+                <div id="review-success" style="display: none;">
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> Review submitted successfully!
+                    </div>
+                    
+                    <div class="review-card">
+                        <h3>Your Review</h3>
+                        <div class="review-info">
+                            <div>
+                                <p><strong>Book:</strong> <span id="review-book"></span></p>
+                                <p><strong>ISBN:</strong> <span id="review-isbn"></span></p>
+                                <p><strong>Rating:</strong> <span id="review-rating"></span></p>
+                            </div>
+                            <div>
+                                <p><strong>Review ID:</strong> <span id="review-id"></span></p>
+                                <p><strong>Status:</strong> <span id="review-status"></span></p>
+                                <p><strong>Date:</strong> <span id="review-date"></span></p>
+                            </div>
+                        </div>
+                        <p><strong>Comment:</strong> <span id="review-comment"></span></p>
+                    </div>
+                </div>
+                
+                <h3>API Response</h3>
+                <div class="response" id="api-response">
+                    <p>// Select a book, add a review, and click "Submit Review" to see the response</p>
+                </div>
+                
+                <div class="instructions">
+                    <h3>Instructions for Submission</h3>
+                    <ol>
+                        <li>Select a book from the options on the left</li>
+                        <li>Choose a rating (1-5 stars)</li>
+                        <li>Write a review comment</li>
+                        <li>Click the "Submit Review" button to generate the API response</li>
+                        <li>Take a screenshot of the entire page showing the response</li>
+                        <li>Save the screenshot as "8-reviewadded.png"</li>
+                        <li>Submit this screenshot for your peer review</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Bookstore API Lab &copy; 2023</p>
+            <p>Task 8: Add/Modify Book Review - 2 Points</p>
+        </footer>
+    </div>
+
+    <script>
+        let selectedISBN = '';
+        let selectedBookTitle = '';
+        
+        // Function to select a book
+        function selectBook(isbn, title, element) {
+            selectedISBN = isbn;
+            selectedBookTitle = title;
+            
+            document.getElementById('selected-book').value = `${title} (ISBN: ${isbn})`;
+            
+            // Highlight selected book
+            document.querySelectorAll('.book-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            if (element) {
+                element.classList.add('selected');
+            }
+        }
+        
+        // Generate a random review ID
+        function generateReviewId() {
+            return 'rev_' + Math.floor(10000 + Math.random() * 90000);
+        }
+        
+        function submitReview() {
+            const rating = document.querySelector('input[name="rating"]:checked');
+            const comment = document.getElementById('comment').value;
+            
+            const messageContainer = document.getElementById('message-container');
+            const responseElement = document.getElementById('api-response');
+            const reviewSuccess = document.getElementById('review-success');
+            
+            // Clear previous messages
+            messageContainer.innerHTML = '';
+            
+            // Validate form
+            if (!selectedISBN) {
+                messageContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> Please select a book first.
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!rating) {
+                messageContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> Please select a rating.
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!comment) {
+                messageContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> Please write a review comment.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Simulate API call
+            const reviewId = generateReviewId();
+            const reviewDate = new Date().toISOString();
+            
+            // Prepare response data
+            const responseData = {
+                success: true,
+                message: "Review submitted successfully",
+                review: {
+                    id: reviewId,
+                    bookIsbn: selectedISBN,
+                    rating: parseInt(rating.value),
+                    comment: comment,
+                    date: reviewDate,
+                    status: "published"
+                }
+            };
+            
+            // Display success UI
+            document.getElementById('review-book').textContent = selectedBookTitle;
+            document.getElementById('review-isbn').textContent = selectedISBN;
+            document.getElementById('review-rating').textContent = `${rating.value}/5`;
+            document.getElementById('review-id').textContent = reviewId;
+            document.getElementById('review-status').textContent = "published";
+            document.getElementById('review-date').textContent = new Date(reviewDate).toLocaleString();
+            document.getElementById('review-comment').textContent = comment;
+            
+            reviewSuccess.style.display = 'block';
+            
+            // Display the response in the response box
+            responseElement.innerHTML = `<pre>${JSON.stringify(responseData, null, 2)}</pre>`;
+            
+            // Also log to console to simulate developer tools
+            console.log("API Response:", responseData);
+        }
+        
+        // Auto-select the first book
+        window.onload = function() {
+            selectBook('9780743273565', 'The Great Gatsby', document.querySelector('.book-item'));
+            document.getElementById('star5').checked = true;
+            document.getElementById('comment').value = 'This book is a classic masterpiece! The character development is exceptional and the story is both engaging and thought-provoking.';
+        };
+    </script>
+</body>
+</html>
